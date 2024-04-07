@@ -15,7 +15,7 @@
   (load-theme 'leuven t))
 
 (unless (eq system-type 'darwin)
-  (menu-bar-mode -1))
+  (menu-bar-mode t))
 
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
