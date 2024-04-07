@@ -33,16 +33,5 @@
     :config
     (which-key-mode))
 
-(setq custom-safe-themes t)
-(use-package zenburn-theme
-  :ensure t
-  :init
-  (load-theme 'zenburn t))
-
-;;(use-package nimbus-theme
-;;  :ensure t
-;;  :config
-;;  (load-theme 'nimbus t))
-
 (provide 'init-pkg)
 

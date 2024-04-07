@@ -32,6 +32,17 @@
 		  (cabins/setup-font))))
   (add-hook 'after-init-hook #'cj/setup-font))
 
+(setq custom-safe-themes t)
+(use-package zenburn-theme
+  :ensure t
+  :init
+  (load-theme 'zenburn t))
+
+;;(use-package nimbus-theme
+;;  :ensure t
+;;  :config
+;;  (load-theme 'nimbus t))
+
 (use-package nerd-icons
   :ensure t
   :when (display-graphic-p)
@@ -45,5 +56,8 @@
   ;       ("C-0" . text-scale-adjust))
   :config
   (set-face-attribute 'default nil :family "Hack Nerd Font" :height 120))
+
+(eval-when-compile
+  (use-package powerline))
 
 (provide 'init-ui)
