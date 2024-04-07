@@ -32,4 +32,18 @@
 		  (cabins/setup-font))))
   (add-hook 'after-init-hook #'cj/setup-font))
 
+(use-package nerd-icons
+  :ensure t
+  :when (display-graphic-p)
+  :custom
+  (nerd-icons-font-family "Symbols Nerd Font Mono"))
+
+(use-package emacs
+  :ensure nil
+  ;:bind (("C--" . text-scale-decrease)
+  ;       ("C-=" . text-scale-increase)
+  ;       ("C-0" . text-scale-adjust))
+  :config
+  (set-face-attribute 'default nil :family "Hack Nerd Font" :height 120))
+
 (provide 'init-ui)
