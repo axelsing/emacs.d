@@ -1,7 +1,7 @@
 
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'after-init-hook (lambda ()
-			     (setq gc-cons-threshold 800000)))
+			     (setq gc-cons-threshold (* 800 1000 1000))))
 
 (setq package-enable-at-startup nil)
 (setq load-prefer-newer noninteractive)

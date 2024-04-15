@@ -2,6 +2,7 @@
 (prefer-coding-system 'utf-8)
 
 (setq auto-save-default nil	   ; disable auto save
+      global-auto-revert-mode t
       auto-window-vscroll nil
       delete-by-moving-to-trash t  ; disable delete directly
       fast-but-imprecise-scrolling t
