@@ -32,11 +32,11 @@
 		  (cabins/setup-font))))
   (add-hook 'after-init-hook #'cj/setup-font))
 
-(setq custom-safe-themes t)
-(use-package zenburn-theme
-  :ensure t
-  :init
-  (load-theme 'zenburn t))
+;(setq custom-safe-themes t)
+;(use-package zenburn-theme
+;  :ensure t
+;  :init
+;  (load-theme 'zenburn t))
 
 ;;(use-package nimbus-theme
 ;;  :ensure t

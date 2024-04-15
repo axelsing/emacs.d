@@ -11,7 +11,8 @@
 (set-language-environment 'utf-8)
 
 (if (>= emacs-major-version 28)
-    (load-theme 'modus-operandi t)
+                                        ;(load-theme 'modus-operandi t)
+    (load-theme  'modus-vivendi t)
   (load-theme 'leuven t))
 
 (unless (eq system-type 'darwin)
