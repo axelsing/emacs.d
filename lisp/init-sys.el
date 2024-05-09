@@ -34,12 +34,13 @@
 	  mode-line-compact t
       use-short-answers t)
 
-(setq-default cursor-type 'bar) 
+(setq-default cursor-type 'bar)
 
-;; Highlight Current Line
-(use-package hl-line
-  :when (display-graphic-p)
-  :hook (prog-mode . hl-line-mode))
+(defvar cj-os-win (memq system-type '(ms-dos windows-nt cygwin)))
+(defvar cj-os-mac (eq system-type 'darwin))
+
+;; ibuffer
+(defalias 'list-buffers 'ibuffer)
 
 ;;; macOS
 ;; move file to trash when delete

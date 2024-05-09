@@ -1,4 +1,30 @@
 
+;; Highlight Current Line
+(use-package hl-line
+  :when (display-graphic-p)
+  :hook (prog-mode . hl-line-mode))
+
+;; Show Paren Mode
+(use-package paren
+  :config
+  (setq show-paren-when-point-in-periphery t
+	show-paren-when-point-inside-paren t
+	show-paren-style 'mixed))
+
+;; windmove.el, use  <SHIFT - arrow key> to switch buffers
+(use-package windmove
+  :config (windmove-default-keybindings))
+
+;; Settings for exec-path-from-shell
+;; fix the PATH environment variable issue
+;(use-package exec-path-from-shell
+;  :ensure t
+;  :when (or (memq window-system '(mac ns x))
+;	    (unless cj-os-win
+;	      (daemonp)))
+;  :init (exec-path-from-shell-initialize))
+
+
 (use-package all-the-icons
   :when (display-graphic-p))
 
