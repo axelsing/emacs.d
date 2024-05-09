@@ -10,7 +10,7 @@
   "Font setup."
 
   (interactive)
-  (let* ((efl '("Hack" "Cascadia Code" "Source Code Pro" "JetBrains Mono" "Courier New" "Monaco" "Ubuntu Mono"))
+  (let* ((efl '("Hack Nerd Font" "Hack" "Cascadia Code" "Source Code Pro" "JetBrains Mono" "Courier New" "Monaco" "Ubuntu Mono"))
 	 (cfl '("楷体" "黑体" "STHeiti" "STKaiti"))
 	 (cf (available-font cfl))
 	 (ef (available-font efl)))
@@ -29,7 +29,7 @@
     (add-hook 'after-make-frame-functions
 	      (lambda (frame)
 		(with-selected-frame frame
-		  (cabins/setup-font))))
+		  (cj/setup-font))))
   (add-hook 'after-init-hook #'cj/setup-font))
 
 ;(setq custom-safe-themes t)
@@ -55,7 +55,8 @@
   ;       ("C-=" . text-scale-increase)
   ;       ("C-0" . text-scale-adjust))
   :config
-  (set-face-attribute 'default nil :family "Hack Nerd Font" :height 120))
+  (set-face-attribute 'default nil :height 120))
+  ;(set-face-attribute 'default nil :family "Hack Nerd Font" :height 120))
 
 (eval-when-compile
   (use-package powerline))
