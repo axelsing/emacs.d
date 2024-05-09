@@ -6,7 +6,7 @@
       auto-window-vscroll nil
       delete-by-moving-to-trash t  ; disable delete directly
       fast-but-imprecise-scrolling t
-      frame-title-format "%b"
+      frame-title-format "%f"
       help-window-select t
       inhibit-startup-screen t	   ; disable the startup screen splash
       inhibit-default-init t
@@ -16,15 +16,15 @@
       make-backup-files nil             ; disable backup file
       ;; Mouse wheel scroll behavior
       ;; mouse-wheel-scroll-amount '(1 ((shift) . 1))
-      mouse-wheel-progressive-speed nil
+      mouse-wheel-progressive-speed t
       mouse-wheel-follow-mouse t
       next-line-add-newlines nil
       read-process-output-max (* 64 1024)
       scroll-step 1
       scroll-conservatively 10000
       scroll-preserve-screen-position t
-      scroll-up-aggressively 0.01
-      scroll-down-aggressively 0.01
+      scroll-up-aggressively 1
+      scroll-down-aggressively 1
       visible-bell nil)
 
 ;;; macOS
