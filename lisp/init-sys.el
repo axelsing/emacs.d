@@ -25,7 +25,21 @@
       scroll-preserve-screen-position t
       scroll-up-aggressively 1
       scroll-down-aggressively 1
-      visible-bell nil)
+      ;;
+      visible-bell nil
+      ;default-text-properties '(line-spacing 0.2 line-height 1.2) ;default line height
+      isearch-allow-motion t
+	  isearch-lazy-count t
+	  kill-whole-line t
+	  mode-line-compact t
+      use-short-answers t)
+
+(setq-default cursor-type 'bar) 
+
+;; Highlight Current Line
+(use-package hl-line
+  :when (display-graphic-p)
+  :hook (prog-mode . hl-line-mode))
 
 ;;; macOS
 ;; move file to trash when delete
