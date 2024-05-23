@@ -24,6 +24,17 @@
 ;	      (daemonp)))
 ;  :init (exec-path-from-shell-initialize))
 
+(use-package crux)
+
+;; Sidebar
+(use-package sr-speedbar
+  :ensure t
+  :config
+  (sr-speedbar-open)
+  (custom-set-variables
+   '(speedbar-show-unknown-files t))
+  )
+
 
 (use-package all-the-icons
   :when (display-graphic-p))
@@ -40,6 +51,26 @@
 (use-package smartscan
   :init (smartscan-mode))
 
+;;; All modes
+(use-package cuda-mode
+  :ensure t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.cu\\'" . cuda-mode))
+)
+
+;(use-package bazel-mode
+;  :ensure t
+;  :init
+;  (add-to-list 'auto-mode-alist '("BUILD" . bazel-mode))
+;)
+(use-package protobuf-mode
+  :ensure t)
+
+;;; Switch between .hh and .cc files
+(add-hook 'c-mode-common-hook
+          (lambda()
+            (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
+
 (use-package lsp-mode
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
@@ -54,10 +85,10 @@
 ;; optionally
 (use-package lsp-ui :commands lsp-ui-mode)
 
-;; optional if you want which-key integration
-(use-package which-key
-    :config
-    (which-key-mode))
+(use-package yasnippet
+  :ensure t
+  :diminish yas-minor-mode
+  :init (yas-global-mode t))
 
 (use-package company
   :config
@@ -77,6 +108,15 @@
         company-begin-commands '(self-insert-command))
   (push '(company-semantic :with company-yasnippet) company-backends)
   :hook ((after-init . global-company-mode)))
+
+;; fzf fuzzy finder
+;; Only want to search through git files by default
+;; NOTE: Install fzf on your system for this plugin to work
+
+(use-package fzf
+  :ensure t)
+(global-set-key (kbd "C-x p") 'fzf-git-files)
+(global-set-key (kbd "C-x f") 'fzf-git-files)
 
 (use-package ivy
   :defer 1
@@ -103,6 +143,11 @@
          ("C-r" . swiper-isearch-backward))
   :config (setq swiper-action-recenter t
                 swiper-include-line-number-in-search t))
+
+(use-package ace-window
+  :ensure t
+  :bind (("C-x o" . 'ace-window)))
+
 
 (provide 'init-pkg)
 
