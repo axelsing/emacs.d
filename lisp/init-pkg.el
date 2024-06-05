@@ -170,10 +170,115 @@
   :ensure t
   :init (amx-mode))
 
+(use-package mwim
+  :ensure t
+  :bind
+  ("C-a" . mwim-beginning-of-code-or-line)
+  ("C-e" . mwim-end-of-code-or-line))
+
 (use-package ace-window
   :ensure t
   :bind (("C-x o" . 'ace-window)))
 
+(global-set-key (kbd "C-j") nil)
+(use-package avy
+  :ensure t
+  :bind
+  (("C-j C-SPC" . avy-goto-char-timer)
+   ("C-j C-k" . avy-move-line)
+   ("C-j C-l" . avy-copy-line)
+   ("C-j C-i" . avy-copy-region)))
+
+(use-package helpful
+  :ensure t
+  :bind
+  ("C-h f" . 'helpful-callable)
+  ("C-h v" . 'helpful-variable)
+  ("C-h k" . 'helpful-key)
+  ("C-h x" . 'helpful-command))
+
+(use-package hydra
+  :demand t
+  :ensure t)
+
+(use-package use-package-hydra
+  :demand t
+  :ensure t
+  :after hydra)
+
+(use-package highlight-symbol
+  :ensure t
+  :init (highlight-symbol-mode)
+  :bind ("<f3>" . highlight-symbol))
+
+;; multiple-cursors
+(use-package multiple-cursors
+  :ensure t
+  :after hydra
+  :bind
+  (("C-x C-h m" . hydra-multiple-cursors/body)
+   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click))
+  :hydra
+  (hydra-multiple-cursors
+   (:hint nil)
+   "
+Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
+------------------------------------------------------------------
+ [_p_]   Prev     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
+ [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
+ [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search      [_q_] Quit
+ [_|_] Align with input CHAR       [Click] Cursor at point"
+   ("l" mc/edit-lines :exit t)
+   ("a" mc/mark-all-like-this :exit t)
+   ("n" mc/mark-next-like-this)
+   ("N" mc/skip-to-next-like-this)
+   ("M-n" mc/unmark-next-like-this)
+   ("p" mc/mark-previous-like-this)
+   ("P" mc/skip-to-previous-like-this)
+   ("M-p" mc/unmark-previous-like-this)
+   ("|" mc/vertical-align)
+   ("s" mc/mark-all-in-region-regexp :exit t)
+   ("0" mc/insert-numbers :exit t)
+   ("A" mc/insert-letters :exit t)
+   ("<mouse-1>" mc/add-cursor-on-click)
+   ;; Help with click recognition in this hydra
+   ("<down-mouse-1>" ignore)
+   ("<drag-mouse-1>" ignore)
+   ("q" nil)))
+
+(use-package tiny ; m1\n10|int func%02d ()
+  :ensure t)
+
+;; rainbow delimiters
+(use-package rainbow-delimiters
+  :ensure t
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package dashboard
+  :ensure t
+  :diminish dashboard-mode
+  :config
+  (setq dashboard-banner-logo-title "Coding is happening")
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-startup-banner 'official)
+  (setq dashboard-items '((recents  . 8)
+						  (bookmarks . 5)
+						  (projects . 10)))
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (dashboard-setup-startup-hook))
+
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :init (setq markdown-command "d:/tools/pandoc-3.2/pandoc.exe")
+  :mode (("README\\.md\\'" . gfm-mode)
+		 ("\\.md\\'" . markdown-mode)
+		 ("\\.markdown\\'" . markdown-mode)))
+
+(use-package htmlize
+  :ensure t
+  :defer t)
 
 (provide 'init-pkg)
 
