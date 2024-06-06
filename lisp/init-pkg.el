@@ -66,24 +66,58 @@
 (use-package protobuf-mode
   :ensure t)
 
-;;; Switch between .hh and .cc files
-(add-hook 'c-mode-common-hook
-          (lambda()
-            (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
-
 (use-package lsp-mode
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-keymap-prefix "C-c l"
+        lsp-file-watch-threshold 500)
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (c++-mode . lsp)
-         (c-mode . lsp)
+         ;(c++-mode . lsp)
+         ;(c-mode . lsp)
          ;; if you want which-key integration
          (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp)
+  :commands (lsp lsp-deferred)
+  :bind
+  ("C-c l s" . lsp-ivy-workspace-symbol))
 
 ;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-ui
+  :ensure t
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  :commands lsp-ui-mode)
+
+(use-package lsp-ivy
+  :ensure t
+  :after (lsp-mode))
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :config
+  (treemacs-tag-follow-mode)
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ;; ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag))
+  (:map treemacs-mode-map
+		("/" . treemacs-advanced-helpful-hydra)))
+
+(use-package treemacs-projectile
+  :ensure t
+  :after (treemacs projectile))
+
+(use-package lsp-treemacs
+  :ensure t
+  :after (treemacs lsp))
+
+(use-package magit
+  :ensure t)
 
 (use-package yasnippet
   :ensure t
@@ -109,6 +143,31 @@
   (push '(company-semantic :with company-yasnippet) company-backends)
   :hook ((after-init . global-company-mode)))
 
+(use-package company-box
+  :ensure t
+  :if window-system
+  :hook (company-mode . company-box-mode))
+
+;; hippie
+(global-set-key (kbd "C-<tab>") 'hippie-expand)
+
+(use-package flycheck
+  :disabled
+  :ensure t
+  ;; :init (global-flycheck-mode)
+  :config
+  (setq truncate-lines nil)
+  :hook
+  (prog-mode . flycheck-mode)
+  (c++-mode-hook . (lambda () (setq flycheck-clang-language-standard "c++17"))))
+
+(use-package flycheck-clang-tidy
+  :disabled
+  :ensure t
+  :after flycheck
+  :hook
+  (flycheck-mode . flycheck-clang-tidy-setup))
+
 ;; fzf fuzzy finder
 ;; Only want to search through git files by default
 ;; NOTE: Install fzf on your system for this plugin to work
@@ -129,6 +188,9 @@
 ;;         ivy-count-format "%d/%d "
 ;;         enable-recursive-minibuffers t
 ;;         ivy-re-builders-alist '((t . ivy--regex-ignore-order))))
+
+(use-package rg
+  :ensure t)
 
 (use-package ivy
   :ensure t
@@ -261,12 +323,26 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
   (setq dashboard-banner-logo-title "Coding is happening")
   (setq dashboard-projects-backend 'projectile)
   (setq dashboard-startup-banner 'official)
-  (setq dashboard-items '((recents  . 8)
-						  (bookmarks . 5)
+  (setq dashboard-items '((recents  . 20)
+						  (bookmarks . 10)
 						  (projects . 10)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   (dashboard-setup-startup-hook))
+
+(use-package projectile
+  :ensure t
+  :bind (("C-c p" . projectile-command-map))
+  :config
+  (setq projectile-mode-line "Projectile")
+  (setq projectile-track-known-projects-automatically nil)
+  (defadvice projectile-project-root (around ignore-remote first activate)
+	(unless (file-remote-p default-directory) ad-do-it)))
+
+(use-package counsel-projectile
+  :ensure t
+  :after (projectile)
+  :init (counsel-projectile-mode))
 
 (use-package markdown-mode
   :ensure t
@@ -279,6 +355,33 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 (use-package htmlize
   :ensure t
   :defer t)
+
+;; C/C++
+(use-package cc-mode
+  :functions 			; suppress warnings
+  c-toggle-hungry-state
+  :hook
+  (c-mode . lsp-deferred)
+  (c++-mode . lsp-deferred)
+  (c++-mode . c-toggle-hungry-state)
+  :bind
+  ("C-c o" . ff-find-other-file)
+  ;; ("C-c o" . ff-find-other-file-other-window)
+)
+
+;;; Switch between .hh and .cc files
+(add-hook 'c-mode-common-hook
+          (lambda()
+            (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
+
+
+(use-package clang-format
+  :ensure t)
+
+(use-package cmake-mode
+  :ensure t)
+
+
 
 (provide 'init-pkg)
 
