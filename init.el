@@ -9,13 +9,10 @@
 	package-native-compile t)
   (add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache" user-emacs-directory)))
 
-(require 'init-fn)
-(require 'init-sys)
-(require 'init-elpa)
-(require 'init-pkg)
-(require 'init-bltin)
-(require 'init-ui)
-(require 'init-kbd)
+
+(require 'init-basic)
+(require 'init-enhance)
+
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)

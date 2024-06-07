@@ -26,7 +26,7 @@
 
 (use-package crux)
 
-;; Sidebar
+;; SIDEBAR
 (use-package sr-speedbar
   :ensure t
   :config
@@ -92,6 +92,20 @@
   :ensure t
   :after (lsp-mode))
 
+(use-package projectile
+  :ensure t
+  :bind (("C-c p" . projectile-command-map))
+  :config
+  (setq projectile-mode-line "Projectile")
+  (setq projectile-track-known-projects-automatically nil)
+  (defadvice projectile-project-root (around ignore-remote first activate)
+	(unless (file-remote-p default-directory) ad-do-it)))
+
+(use-package counsel-projectile
+  :ensure t
+  :after (projectile)
+  :init (counsel-projectile-mode))
+
 (use-package treemacs
   :ensure t
   :defer t
@@ -118,6 +132,7 @@
 
 (use-package magit
   :ensure t)
+
 
 (use-package yasnippet
   :ensure t
@@ -177,6 +192,9 @@
 (global-set-key (kbd "C-x p") 'fzf-git-files)
 (global-set-key (kbd "C-x f") 'fzf-git-files)
 
+(use-package rg
+  :ensure t)
+
 ;; (use-package ivy
 ;;   :defer 1
 ;;   :demand
@@ -188,9 +206,6 @@
 ;;         ivy-count-format "%d/%d "
 ;;         enable-recursive-minibuffers t
 ;;         ivy-re-builders-alist '((t . ivy--regex-ignore-order))))
-
-(use-package rg
-  :ensure t)
 
 (use-package ivy
   :ensure t
@@ -227,6 +242,7 @@
          ("C-r" . swiper-isearch-backward))
   :config (setq swiper-action-recenter t
                 swiper-include-line-number-in-search t))
+
 
 (use-package amx
   :ensure t
@@ -330,20 +346,6 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
   (setq dashboard-set-file-icons t)
   (dashboard-setup-startup-hook))
 
-(use-package projectile
-  :ensure t
-  :bind (("C-c p" . projectile-command-map))
-  :config
-  (setq projectile-mode-line "Projectile")
-  (setq projectile-track-known-projects-automatically nil)
-  (defadvice projectile-project-root (around ignore-remote first activate)
-	(unless (file-remote-p default-directory) ad-do-it)))
-
-(use-package counsel-projectile
-  :ensure t
-  :after (projectile)
-  :init (counsel-projectile-mode))
-
 (use-package markdown-mode
   :ensure t
   :commands (markdown-mode gfm-mode)
@@ -381,7 +383,4 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 (use-package cmake-mode
   :ensure t)
 
-
-
-(provide 'init-pkg)
-
+(provide 'init-enhance)
