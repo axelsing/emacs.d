@@ -9,7 +9,8 @@
 
 (setq package-archives '(("gnu" . "https://mirrors.ustc.edu.cn/elpa/gnu/")
                          ("melpa" . "https://mirrors.ustc.edu.cn/elpa/melpa/")
-                         ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")))
+                         ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")
+                         ("melpax" . "https://melpa.org/packages/")))
 
 (unless (bound-and-true-p package--initialized)
   (package-initialize))

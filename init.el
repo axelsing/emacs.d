@@ -12,6 +12,7 @@
 
 (require 'init-basic)
 (require 'init-enhance)
+(require 'init-doc)
 
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
