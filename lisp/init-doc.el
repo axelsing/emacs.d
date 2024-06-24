@@ -65,6 +65,9 @@
   (org-outline-path-complete-in-steps nil)
   ;; Allow refile to create parent tasks with confirmation
   (org-refile-allow-creating-parent-nodes (quote confirm))
+  ;; 自动换行
+  (truncate-lines nil)
+  (toggle-truncate-lines t)
   :bind
   (("C-c a" . 'org-agenda)
    ("C-c c" . 'org-capture)
