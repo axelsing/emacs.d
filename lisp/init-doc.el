@@ -1,5 +1,5 @@
 
-(setq org-directory (file-truename "f:/org/"))
+(setq org-directory (file-truename "~/Documents/org/"))
 (setq cj/org-refile-file (concat org-directory "refile.org"))
 (setq cj/org-agenda-files `(,(concat org-directory "agenda/")))
 

@@ -15,7 +15,7 @@
       auto-window-vscroll nil
       delete-by-moving-to-trash t  ; disable delete directly
       fast-but-imprecise-scrolling t
-      frame-title-format "%f"
+      frame-title-format "%b" ; %f - file, %b - buffer
       help-window-select t
       inhibit-startup-screen t	   ; disable the startup screen splash
       inhibit-default-init t
@@ -132,7 +132,7 @@
 (global-set-key (kbd "C-c r") 'recentf-open-files) ; Open Recent Files
 (global-set-key (kbd "C-x C-r") 'recentf-open-files) ; Open Recent Files
 
-(smartscan-mode 1)
+;(smartscan-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; font
@@ -194,7 +194,7 @@
   ;       ("C-=" . text-scale-increase)
   ;       ("C-0" . text-scale-adjust))
   :config
-  (set-face-attribute 'default nil :height 120))
+  (set-face-attribute 'default nil :height 150))
   ;(set-face-attribute 'default nil :family "Hack Nerd Font" :height 120))
 
 (eval-when-compile

@@ -349,7 +349,7 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 (use-package markdown-mode
   :ensure t
   :commands (markdown-mode gfm-mode)
-  :init (setq markdown-command "d:/tools/pandoc-3.2/pandoc.exe")
+  :init (setq markdown-command "/opt/local/bin/pandoc")
   :mode (("README\\.md\\'" . gfm-mode)
 		 ("\\.md\\'" . markdown-mode)
 		 ("\\.markdown\\'" . markdown-mode)))
