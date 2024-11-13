@@ -41,7 +41,12 @@
 	  isearch-lazy-count t
 	  kill-whole-line t
 	  mode-line-compact t
-      use-short-answers t)
+      use-short-answers t
+      
+      toggle-debug-on-error t
+      display-line-numbers t
+      global-display-line-numbers-mode t
+      )
 
 (setq-default cursor-type 'bar)
 
@@ -132,7 +137,24 @@
 (global-set-key (kbd "C-c r") 'recentf-open-files) ; Open Recent Files
 (global-set-key (kbd "C-x C-r") 'recentf-open-files) ; Open Recent Files
 
-(smartscan-mode 1)
+;; scroll up/down
+(defun scroll-down-in-place (n)
+  (interactive "p")
+  (previous-line n)
+  (scroll-down n))
+
+(defun scroll-up-in-place (n)
+  (interactive "p")
+  (next-line n)
+  (scroll-up n))
+
+(global-set-key [C-up] 'scroll-down-in-place)
+(global-set-key [C-down] 'scroll-up-in-place)
+
+(global-set-key (quote [M-down]) (quote scroll-up-line))
+(global-set-key (quote [M-up]) (quote scroll-down-line))
+
+;;(smartscan-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; font

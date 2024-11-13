@@ -13,7 +13,7 @@
 (require 'init-basic)
 (require 'init-enhance)
 (require 'init-doc)
-
+(require 'init-tramp)
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
