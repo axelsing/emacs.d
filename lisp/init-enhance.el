@@ -371,6 +371,9 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
   ;; ("C-c o" . ff-find-other-file-other-window)
 )
 
+;; https://google.github.io/styleguide/cppguide.html#Formatting
+(add-hook 'c-mode-common-hook 'google-set-c-style)
+(add-hook 'c-mode-common-hook 'google-make-newline-indent)
 ;;; Switch between .hh and .cc files
 (add-hook 'c-mode-common-hook
           (lambda()
@@ -378,7 +381,10 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 
 
 (use-package clang-format
-  :ensure t)
+  :ensure t
+  :bind
+  ("C-c C-f" . clang-format-buffer)
+)
 
 (use-package cmake-mode
   :ensure t)
