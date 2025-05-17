@@ -18,6 +18,7 @@
       frame-title-format "%f" ; %f - file, %b - buffer
       help-window-select t
       inhibit-startup-screen t	   ; disable the startup screen splash
+      ;inhibit-startup-echo-area-message t  ; 底部启动信息
       inhibit-default-init t
       ;; initial-scratch-message nil
       inhibit-compacting-font-caches t

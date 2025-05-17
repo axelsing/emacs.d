@@ -395,15 +395,23 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
   :ensure t
   :diminish dashboard-mode
   :config
+  (dashboard-setup-startup-hook)
   (setq dashboard-banner-logo-title "Coding is happening")
   (setq dashboard-projects-backend 'projectile)
   (setq dashboard-startup-banner 'official)
-  (setq dashboard-items '((recents  . 20)
+  (setq dashboard-items '((projects . 10)
+                          (recents  . 20)
 						  (bookmarks . 10)
-						  (projects . 10)))
+                          (agenda . 5)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
-  (dashboard-setup-startup-hook))
+
+  ;; 调整样式
+  (setq dashboard-center-content t)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t))
+;(dashboard-setup-startup-hook) not work
+(add-hook 'after-init-hook 'dashboard-open)  ; 启动后强制打开
 
 (use-package markdown-mode
   :ensure t
