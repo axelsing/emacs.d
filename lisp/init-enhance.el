@@ -66,11 +66,61 @@
 (use-package protobuf-mode
   :ensure t)
 
+
+(use-package flymake
+  :disabled)
+
+(use-package flycheck
+  :disabled
+  :ensure t
+  ;; :init (global-flycheck-mode)
+  :config
+  (setq truncate-lines nil)
+  :hook
+  (prog-mode . flycheck-mode)
+  (c++-mode-hook . (lambda () (setq flycheck-clang-language-standard "c++17"))))
+
+(use-package flycheck-clang-tidy
+  :disabled
+  :ensure t
+  :after flycheck
+  :hook
+  (flycheck-mode . flycheck-clang-tidy-setup))
+
+;; 禁用 Flymake 自动加载
+(remove-hook 'prog-mode-hook 'flymake-mode)  ; 从编程模式钩子中移除
+(remove-hook 'text-mode-hook 'flymake-mode)  ; 从文本模式钩子中移除
+
+;; 如果已加载 Flymake，关闭它
+(when (bound-and-true-p flymake-mode)
+  (flymake-mode -1))
+
+;; 禁用 Flycheck 自动加载
+;(global-unset-key (kbd "C-c !"))  ; 移除 Flycheck 快捷键绑定
+(setq flycheck-global-modes nil)  ; 阻止全局模式启用
+(remove-hook 'prog-mode-hook 'flycheck-mode)  ; 从编程模式钩子中移除
+
+;; 如果已加载 Flycheck，关闭它
+(when (bound-and-true-p flycheck-mode)
+  (flycheck-mode -1))
+
 (use-package lsp-mode
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
         lsp-file-watch-threshold 500)
+  (setq lsp-diagnostics-provider :none)  ; 禁用 LSP 诊断
+  (setq lsp-enable-diagnostics nil)      ; 确保诊断被禁用
+  (setq lsp-prefer-flymake nil)          ; 不使用 Flymake
+  ;; LSP headerline 配置
+  (setq lsp-headerline-breadcrumb-enable t)
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  ;(setq lsp-headerline-breadcrumb-icons-enable nil)  ; 禁用图标，避免乱码
+  :config
+  ;; 移除 LSP 对 Flymake/Flycheck 的依赖
+  (remove-hook 'lsp-mode-hook #'flymake-mode)
+  (remove-hook 'lsp-mode-hook #'flycheck-mode)
+  (remove-hook 'lsp-after-open-hook #'flymake-start)
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
          ;(c++-mode . lsp)
          ;(c-mode . lsp)
@@ -166,29 +216,23 @@
 ;; hippie
 (global-set-key (kbd "C-<tab>") 'hippie-expand)
 
-(use-package flycheck
-  :disabled
-  :ensure t
-  ;; :init (global-flycheck-mode)
-  :config
-  (setq truncate-lines nil)
-  :hook
-  (prog-mode . flycheck-mode)
-  (c++-mode-hook . (lambda () (setq flycheck-clang-language-standard "c++17"))))
-
-(use-package flycheck-clang-tidy
-  :disabled
-  :ensure t
-  :after flycheck
-  :hook
-  (flycheck-mode . flycheck-clang-tidy-setup))
-
 ;; fzf fuzzy finder
 ;; Only want to search through git files by default
 ;; NOTE: Install fzf on your system for this plugin to work
 
 (use-package fzf
-  :ensure t)
+  :ensure t
+  :config
+  (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
+        fzf/executable "~/.fzf/bin/fzf"
+        fzf/git-grep-args "-i --line-number %s"
+        ;; command used for `fzf-grep-*` functions
+        ;; example usage for ripgrep:
+        fzf/grep-command "rg --no-heading -nH"
+        ;; fzf/grep-command "grep -nrH"
+        ;; If nil, the fzf buffer will appear at the top of the window
+        fzf/position-bottom t
+        fzf/window-height 25))
 (global-set-key (kbd "C-x p") 'fzf-git-files)
 (global-set-key (kbd "C-x f") 'fzf-git-files)
 

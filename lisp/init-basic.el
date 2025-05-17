@@ -15,7 +15,7 @@
       auto-window-vscroll nil
       delete-by-moving-to-trash t  ; disable delete directly
       fast-but-imprecise-scrolling t
-      frame-title-format "%b" ; %f - file, %b - buffer
+      frame-title-format "%f" ; %f - file, %b - buffer
       help-window-select t
       inhibit-startup-screen t	   ; disable the startup screen splash
       inhibit-default-init t
@@ -90,7 +90,7 @@
 (add-to-list 'default-frame-alist '(height . 55)) ; （可选）设定启动图形界面时的初始 Frame 高度（字符数）
 
 ;;; keyboard setting
-(global-set-key (kbd "RET") 'newline-and-indent)
+;(global-set-key (kbd "RET") 'newline-and-indent)
 
 ;; Set home to Hyper
 (global-set-key (kbd "<home>") nil)
