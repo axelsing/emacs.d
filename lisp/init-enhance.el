@@ -13,16 +13,17 @@
 
 ;; windmove.el, use  <SHIFT - arrow key> to switch buffers
 (use-package windmove
+  :ensure t
   :config (windmove-default-keybindings))
 
 ;; Settings for exec-path-from-shell
 ;; fix the PATH environment variable issue
-;(use-package exec-path-from-shell
-;  :ensure t
-;  :when (or (memq window-system '(mac ns x))
-;	    (unless cj-os-win
-;	      (daemonp)))
-;  :init (exec-path-from-shell-initialize))
+(use-package exec-path-from-shell
+  :ensure t
+  :when (or (memq window-system '(mac ns x))
+	    (unless cj-os-win
+	      (daemonp)))
+  :init (exec-path-from-shell-initialize))
 
 (use-package crux)
 
@@ -70,6 +71,10 @@
 (use-package flymake
   :disabled)
 
+;(add-to-list 'load-path "~/.emacs.d/flycheck-35.0")
+;(require 'flycheck)
+;(global-flycheck-mode)
+
 (use-package flycheck
   :disabled
   :ensure t
@@ -109,6 +114,7 @@
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
         lsp-file-watch-threshold 500)
+  ;(setq lsp-enable-symbol-highlighting t)
   (setq lsp-diagnostics-provider :none)  ; 禁用 LSP 诊断
   (setq lsp-enable-diagnostics nil)      ; 确保诊断被禁用
   (setq lsp-prefer-flymake nil)          ; 不使用 Flymake
@@ -136,6 +142,8 @@
   :config
   (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
   (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-doc-enable t)
   :commands lsp-ui-mode)
 
 (use-package lsp-ivy
@@ -147,7 +155,7 @@
   :bind (("C-c p" . projectile-command-map))
   :config
   (setq projectile-mode-line "Projectile")
-  (setq projectile-track-known-projects-automatically nil)
+  (setq projectile-track-known-projects-automatically t)
   (defadvice projectile-project-root (around ignore-remote first activate)
 	(unless (file-remote-p default-directory) ad-do-it)))
 
@@ -160,14 +168,17 @@
   :ensure t
   :defer t
   :config
-  (treemacs-tag-follow-mode)
+  (treemacs-tag-follow-mode t)
+  (treemacs-follow-mode t)  ; 自动跟随当前文件
+  (treemacs-filewatch-mode t)  ; 监听文件变化
+  (treemacs-git-mode 'deferred)  ; 显示 Git 状态
   :bind
   (:map global-map
         ("M-0"       . treemacs-select-window)
         ("C-x t 1"   . treemacs-delete-other-windows)
         ("C-x t t"   . treemacs)
         ("C-x t B"   . treemacs-bookmark)
-        ;; ("C-x t C-t" . treemacs-find-file)
+        ;;("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag))
   (:map treemacs-mode-map
 		("/" . treemacs-advanced-helpful-hydra)))

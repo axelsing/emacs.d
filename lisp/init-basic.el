@@ -53,6 +53,9 @@
 ;; ibuffer
 (defalias 'list-buffers 'ibuffer)
 
+;(window-number-mode 1)          ; 为窗口添加编号
+;(tab-bar-mode 1)                ; 启用标签栏
+
 ;;; macOS
 ;; move file to trash when delete
 (when (eq system-type 'darwin)
