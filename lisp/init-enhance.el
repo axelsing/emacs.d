@@ -422,7 +422,10 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 
 
 (use-package clang-format
-  :ensure t)
+  :ensure t
+  :bind
+  ("C-c C-f" . clang-format-buffer)
+  )
 
 (use-package cmake-mode
   :ensure t)
