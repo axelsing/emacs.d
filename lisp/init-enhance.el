@@ -154,8 +154,11 @@
   :ensure t
   :bind (("C-c p" . projectile-command-map))
   :config
+  ;(setq projectile-indexing-method 'hybrid)  ; 索引方法
+  (setq projectile-enable-caching t)       ; 启用缓存
   (setq projectile-mode-line "Projectile")
   (setq projectile-track-known-projects-automatically t)
+  (setq projectile-completion-system 'ivy)
   (defadvice projectile-project-root (around ignore-remote first activate)
 	(unless (file-remote-p default-directory) ad-do-it)))
 
@@ -170,6 +173,7 @@
   :config
   (treemacs-tag-follow-mode t)
   (treemacs-follow-mode t)  ; 自动跟随当前文件
+  (treemacs-project-follow-mode t)  ; 跟随项目切换
   (treemacs-filewatch-mode t)  ; 监听文件变化
   (treemacs-git-mode 'deferred)  ; 显示 Git 状态
   :bind
