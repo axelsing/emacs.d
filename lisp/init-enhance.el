@@ -221,6 +221,13 @@
   :ensure t
   :defer t
   :config
+  ;; 宽度和位置配置
+  ;(setq treemacs-width 30)               ; 默认宽度
+  ;(setq treemacs-position 'right)        ; 放在右侧
+  ;; 自动调整宽度（可选）
+  (setq treemacs-width-is-initially-locked nil)  ; 允许动态调整
+  (setq treemacs-width (if (< (display-pixel-width) 1600) 25 35))
+  
   (treemacs-tag-follow-mode t)
   (treemacs-follow-mode t)  ; 自动跟随当前文件
   (treemacs-project-follow-mode t)  ; 跟随项目切换
