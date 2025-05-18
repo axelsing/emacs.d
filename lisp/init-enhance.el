@@ -25,10 +25,24 @@
 	      (daemonp)))
   :init (exec-path-from-shell-initialize))
 
-(use-package crux)
+;; A Collection of Ridiculously Useful eXtensions for Emacs.
+(use-package crux
+  :ensure t
+  :bind (;("C-a" . crux-move-beginning-of-line)  ; 智能行首（替代原生 C-a）
+         ("C-S-o" . crux-smart-open-line)
+         ("C-c d" . crux-duplicate-current-line-or-region)
+         ("C-c r" . crux-rename-file-and-buffer)))
+
+(use-package comment-dwim-2
+  :ensure t
+  :config
+  (setq comment-dwim-2-maybe-stay-on-line t)  ; 连续注释时留在当前行
+  (setq comment-dwim-2-suppress-newline t)     ; 支持嵌套注释
+  :bind (("M-;" . comment-dwim-2)))
 
 ;; SIDEBAR
 (use-package sr-speedbar
+  :disabled ; treemacs is better
   :ensure t
   :config
   (sr-speedbar-open)
@@ -376,11 +390,23 @@
   :ensure t
   :bind (("C-x o" . 'ace-window)))
 
+;; sth. like vim easymotion
 (global-set-key (kbd "C-j") nil)
 (use-package avy
   :ensure t
+  :config
+  (setq avy-all-windows nil)          ; 只在当前窗口标记
+  (setq avy-background t)             ; 背景字符半透明
+  (setq avy-style 'at-full)           ; 标记样式：完整单词高亮
+  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))  ; 使用 home 行字符作为标记, 最方便按的键
+  ;; (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?q ?w ?e ?r ?t ?y ?u ?i ?o ?p))
   :bind
-  (("C-j C-SPC" . avy-goto-char-timer)
+  (("C-'" . avy-goto-char)      ; 跳转到字符
+   ("C-\"" . avy-goto-char-2)    ; 跳转到双字符组合
+   ("M-g f" . avy-goto-line)     ; 跳转到行
+   ("M-g w" . avy-goto-word-1)   ; 跳转到单词
+   ("M-g e" . avy-goto-word-0) ; 跳转到单词（词尾）
+   ("C-j C-SPC" . avy-goto-char-timer)
    ("C-j C-k" . avy-move-line)
    ("C-j C-l" . avy-copy-line)
    ("C-j C-i" . avy-copy-region)))
@@ -412,38 +438,42 @@
   :ensure t
   :after hydra
   :bind
-  (("C-x C-h m" . hydra-multiple-cursors/body)
-   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click))
+  (("C-S-c C-S-c" . mc/edit-lines)       ; 编辑选中的行
+   ("C-c l" . mc/edit-lines)
+   ("C->" . mc/mark-next-like-this)      ; 标记下一个匹配项
+   ("C-<" . mc/mark-previous-like-this)  ; 标记上一个匹配项
+   ("C-c C-<" . mc/mark-all-like-this)   ; 标记所有匹配项
+   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click) ; 鼠标点击添加光标
+   ("C-c m" . hydra-multiple-cursors/body))
   :hydra
   (hydra-multiple-cursors
    (:hint nil)
    "
-Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
-------------------------------------------------------------------
- [_p_]   Prev     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
- [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
- [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search      [_q_] Quit
- [_|_] Align with input CHAR       [Click] Cursor at point"
+ 多行编辑: [_l_] Edit lines [_n_] 下一个  [_p_] 上一个  [_a_] 所有  [_s_] 搜索  [_q_] 退出
+ 列编辑:   [_v_] 垂直对齐  [_i_] 插入数字  [_A_] 插入字母
+ 操作:     [_d_] 删除行  [_b_] 复制行  [_j_] 合并行"
    ("l" mc/edit-lines :exit t)
-   ("a" mc/mark-all-like-this :exit t)
    ("n" mc/mark-next-like-this)
-   ("N" mc/skip-to-next-like-this)
-   ("M-n" mc/unmark-next-like-this)
    ("p" mc/mark-previous-like-this)
-   ("P" mc/skip-to-previous-like-this)
-   ("M-p" mc/unmark-previous-like-this)
-   ("|" mc/vertical-align)
-   ("s" mc/mark-all-in-region-regexp :exit t)
-   ("0" mc/insert-numbers :exit t)
-   ("A" mc/insert-letters :exit t)
-   ("<mouse-1>" mc/add-cursor-on-click)
-   ;; Help with click recognition in this hydra
-   ("<down-mouse-1>" ignore)
-   ("<drag-mouse-1>" ignore)
-   ("q" nil)))
+   ("a" mc/mark-all-like-this)
+   ("s" mc/mark-all-in-region-regexp)
+   ("v" mc/vertical-align)
+   ("i" mc/insert-numbers)
+   ("A" mc/insert-letters)
+   ("d" mc/delete-lines)
+   ("b" mc/duplicate-current-line-or-region)
+   ("j" mc/join-lines)
+   ("q" nil :color blue)))
+
+;; 智能扩大选区
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . er/expand-region))
 
 (use-package tiny ; m1\n10|int func%02d ()
-  :ensure t)
+  :ensure t
+  :bind
+  ("C-;" . tiny-expand))
 
 ;; rainbow delimiters
 (use-package rainbow-delimiters

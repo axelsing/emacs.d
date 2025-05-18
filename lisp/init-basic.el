@@ -43,10 +43,11 @@
 	  kill-whole-line t
 	  mode-line-compact t
       use-short-answers t
-      
-      toggle-debug-on-error t
+
+      ; use toggle-debug-on-error
+      ;debug-on-error t ; 会导致加载失败，奇怪，估计和use-package哪里有冲突?
       display-line-numbers t
-      display-line-numbers t
+      global-display-line-numbers-mode t
       )
 
 (setq-default cursor-type 'bar)
@@ -134,6 +135,7 @@
 (global-set-key (kbd "M-p") 'previous-ten-lines)
 
 ;; bookmark
+;(global-set-key (kbd "C-@") 'set-mark-command)
 (global-set-key (kbd "H-x m") 'bookmark-set)
 (global-set-key (kbd "H-x b") 'bookmark-jump)
 (global-set-key (kbd "H-x l") 'bookmark-bmenu-list)
