@@ -117,16 +117,49 @@
   ;(setq lsp-enable-symbol-highlighting t)
   (setq lsp-diagnostics-provider :none)  ; 禁用 LSP 诊断
   (setq lsp-enable-diagnostics nil)      ; 确保诊断被禁用
-  (setq lsp-prefer-flymake nil)          ; 不使用 Flymake
+  (setq lsp-prefer-flymake nil)          ; 使用 flycheck 而非 flymake
   ;; LSP headerline 配置
   (setq lsp-headerline-breadcrumb-enable t)
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
   ;(setq lsp-headerline-breadcrumb-icons-enable nil)  ; 禁用图标，避免乱码
   :config
+  ;; 支持 TRAMP 远程开发
+  (setq lsp-enable-file-watchers nil)  ; 禁用文件监控（远程可能有问题）
+  (setq lsp-keep-workspace-alive nil)   ; 关闭项目时自动关闭 LSP 服务器
+  ;(setq lsp-auto-guess-root nil)        ; 不自动猜测项目根目录
   ;; 移除 LSP 对 Flymake/Flycheck 的依赖
   (remove-hook 'lsp-mode-hook #'flymake-mode)
   (remove-hook 'lsp-mode-hook #'flycheck-mode)
   (remove-hook 'lsp-after-open-hook #'flymake-start)
+
+  ;; 注册常用远程 LSP 客户端
+  (lsp-register-client
+    (make-lsp-client :new-connection (lsp-tramp-connection "pylsp")
+                     :major-modes '(python-mode)
+                     :remote? t
+                     :server-id 'pylsp-remote))
+
+  (lsp-register-client
+   (make-lsp-client
+    ;:new-connection (lsp-tramp-connection "clangd")
+    :new-connection (lsp-tramp-connection
+                    (lambda ()
+                      (cons "clangd" '("--background-index"
+                                       "--compile-commands-dir=build"
+                                       "--header-insertion-decorators=0"
+                                       "--all-scopes-completion"
+                                       "--pch-storage=memory")))) ; "--log=error"; 减少日志输出
+    :major-modes '(c-mode c++-mode)
+    :remote? t
+    :server-id 'clangd-remote))
+  ;; 快速打开远程项目
+  (defun my-open-remote-project ()
+    (interactive)
+    (let ((remote-path (read-file-name "Remote path: " "/ssh:")))
+      (find-file remote-path)
+      (when (projectile-project-p)
+        (projectile-add-known-project remote-path))))
+  
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
          ;(c++-mode . lsp)
          ;(c-mode . lsp)
@@ -143,12 +176,29 @@
   (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
   (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
   (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)  ; 减少干扰
   (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-doc-position 'at-point)     ; 文档显示位置 'bottom at-point
   :commands lsp-ui-mode)
 
 (use-package lsp-ivy
   :ensure t
   :after (lsp-mode))
+
+(use-package dap-mode
+  :ensure t
+  :after lsp-mode
+  :config
+  (dap-auto-configure-mode)
+  (require 'dap-gdb-lldb)
+  ;; 配置 GDB 路径（远程）
+  (setq dap-gdb-lldb-debug-program '("gdb" "--interpreter=mi"))
+  (dap-register-debug-provider "gdb"
+    (lambda (conf)
+      (-> conf
+          (plist-put :type "gdb")
+          (plist-put :request "launch")
+          (plist-put :name "Debug Remote")))))
 
 (use-package projectile
   :ensure t
@@ -176,6 +226,8 @@
   (treemacs-project-follow-mode t)  ; 跟随项目切换
   (treemacs-filewatch-mode t)  ; 监听文件变化
   (treemacs-git-mode 'deferred)  ; 显示 Git 状态
+  (setq treemacs-remote-file-behavior 'copy) ; 支持远程文件树
+  (treemacs-resize-icons 16)
   :bind
   (:map global-map
         ("M-0"       . treemacs-select-window)
@@ -216,7 +268,7 @@
         company-minimum-prefix-length 2
         company-show-numbers t
         company-tooltip-limit 20
-        company-idle-delay 0
+        company-idle-delay 0.2
         company-echo-delay 0
         company-tooltip-offset-display 'scrollbar
         company-begin-commands '(self-insert-command))
