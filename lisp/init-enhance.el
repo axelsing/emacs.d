@@ -416,8 +416,8 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
 )
 
 ;; https://google.github.io/styleguide/cppguide.html#Formatting
-(add-hook 'c-mode-common-hook 'google-set-c-style)
-(add-hook 'c-mode-common-hook 'google-make-newline-indent)
+;(add-hook 'c-mode-common-hook 'google-set-c-style)
+;(add-hook 'c-mode-common-hook 'google-make-newline-indent)
 ;;; Switch between .hh and .cc files
 (add-hook 'c-mode-common-hook
           (lambda()
