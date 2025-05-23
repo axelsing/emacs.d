@@ -1,4 +1,37 @@
 
+;(when (eq system-type 'windows-nt)
+(when nil
+  ;; 设置Git Bash为默认shell
+  (setq explicit-shell-file-name "D:/Program Files/Git/bin/bash.exe")
+  (setq shell-file-name explicit-shell-file-name)
+  (setq explicit-bash.exe-args '("--login" "-i"))
+  
+  ;; 添加Git Bash的bin目录到exec-path
+  (add-to-list 'exec-path "D:/Program Files/Git/bin")
+  (add-to-list 'exec-path "D:/Program Files/Git/usr/bin")
+  
+  ;; 设置环境变量
+  (setenv "SHELL" shell-file-name)
+  (setenv "PATH" (concat "D:/Program Files/Git/bin;"
+                         "D:/Program Files/Git/usr/bin;"
+                         (getenv "PATH")))
+
+  (defun wsl-path (path)
+    "将Windows路径转换为Unix风格路径"
+    (when path
+      (replace-regexp-in-string "\\\\" "/"
+                                 (replace-regexp-in-string "^\\([A-Za-z]\\):" "/mnt/\\L\\1" path))))
+  
+  ;; 配置shell模式
+  (add-hook 'shell-mode-hook
+            (lambda ()
+              (setq comint-process-echoes t)
+              (setq comint-prompt-read-only t)
+              (ansi-color-for-comint-mode-on)
+              (setq buffer-file-coding-system 'utf-8-unix)))
+  )
+
+
 ;; Highlight Current Line
 (use-package hl-line
   :when (display-graphic-p)
@@ -139,6 +172,7 @@
   :diminish yas-minor-mode
   :init (yas-global-mode t))
 
+; clang.exe -v -E -x c++ -  # 查看默认包含路径
 (use-package company
   :config
   (setq company-dabbrev-code-everywhere t
@@ -149,14 +183,17 @@
         company-dabbrev-other-buffers 'all
         company-require-match nil
         company-minimum-prefix-length 2
+        company-selection-wrap-around t
+        company-tooltip-align-annotations t
         company-show-numbers t
         company-tooltip-limit 20
-        company-idle-delay 0
+        company-idle-delay 0.2
         company-echo-delay 0
         company-tooltip-offset-display 'scrollbar
         company-begin-commands '(self-insert-command))
   (push '(company-semantic :with company-yasnippet) company-backends)
   :hook ((after-init . global-company-mode)))
+
 
 (use-package company-box
   :ensure t
@@ -186,7 +223,6 @@
 ;; fzf fuzzy finder
 ;; Only want to search through git files by default
 ;; NOTE: Install fzf on your system for this plugin to work
-
 (use-package fzf
   :ensure t)
 (global-set-key (kbd "C-x p") 'fzf-git-files)
@@ -216,6 +252,7 @@
   (ivy-use-virtual-buffers t)
   (search-default-mode #'char-fold-to-regexp)
   (ivy-count-format "(%d/%d) ")
+  (setq ivy-initial-inputs-alist nil)  ; 禁用默认输入
   :bind
   (("C-s" . 'swiper)
    ("C-x b" . 'ivy-switch-buffer)
@@ -238,10 +275,17 @@
 
 (use-package swiper
   :after ivy
-  :bind (("C-s" . swiper)
+  :bind (("C-s" . my-swiper-at-point)
          ("C-r" . swiper-isearch-backward))
   :config (setq swiper-action-recenter t
-                swiper-include-line-number-in-search t))
+                swiper-include-line-number-in-search t)
+  (defun my-swiper-at-point ()
+    (interactive)
+    (let ((current-word (if (thing-at-point 'word)
+                            (thing-at-point 'word)
+                          "")))
+      (swiper current-word)))
+  )
 
 
 (use-package amx
