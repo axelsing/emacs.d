@@ -1,19 +1,19 @@
 
-;(when (eq system-type 'windows-nt)
-(when nil
+(when (eq system-type 'windows-nt)
+;(when nil
   ;; 设置Git Bash为默认shell
-  (setq explicit-shell-file-name "D:/Program Files/Git/bin/bash.exe")
+  (setq explicit-shell-file-name "C:/Program Files/Git/bin/bash.exe")
   (setq shell-file-name explicit-shell-file-name)
   (setq explicit-bash.exe-args '("--login" "-i"))
   
   ;; 添加Git Bash的bin目录到exec-path
-  (add-to-list 'exec-path "D:/Program Files/Git/bin")
-  (add-to-list 'exec-path "D:/Program Files/Git/usr/bin")
+  (add-to-list 'exec-path "C:/Program Files/Git/bin")
+  (add-to-list 'exec-path "C:/Program Files/Git/usr/bin")
   
   ;; 设置环境变量
   (setenv "SHELL" shell-file-name)
-  (setenv "PATH" (concat "D:/Program Files/Git/bin;"
-                         "D:/Program Files/Git/usr/bin;"
+  (setenv "PATH" (concat "C:/Program Files/Git/bin;"
+                         "C:/Program Files/Git/usr/bin;"
                          (getenv "PATH")))
 
   (defun wsl-path (path)
@@ -46,6 +46,7 @@
 
 ;; windmove.el, use  <SHIFT - arrow key> to switch buffers
 (use-package windmove
+  :ensure t
   :config (windmove-default-keybindings))
 
 ;; Settings for exec-path-from-shell
@@ -57,10 +58,23 @@
 ;	      (daemonp)))
 ;  :init (exec-path-from-shell-initialize))
 
-(use-package crux)
+(use-package crux
+    :ensure t
+    :bind (;("C-a" . crux-move-beginning-of-line)  ; 智能行首（替代原生 C-a）
+         ("C-S-o" . crux-smart-open-line)
+         ("C-c d" . crux-duplicate-current-line-or-region)
+         ("C-c r" . crux-rename-file-and-buffer)))
+
+(use-package comment-dwim-2
+  :ensure t
+  :config
+  (setq comment-dwim-2-maybe-stay-on-line t)  ; 连续注释时留在当前行
+  (setq comment-dwim-2-suppress-newline t)     ; 支持嵌套注释
+  :bind (("M-;" . comment-dwim-2)))
 
 ;; SIDEBAR
 (use-package sr-speedbar
+  :disabled
   :ensure t
   :config
   (sr-speedbar-open)
@@ -99,11 +113,94 @@
 (use-package protobuf-mode
   :ensure t)
 
+(use-package flymake
+  :disabled)
+
+(use-package flycheck
+  :disabled
+  :ensure t
+  ;; :init (global-flycheck-mode)
+  :config
+  (setq truncate-lines nil)
+  :hook
+  (prog-mode . flycheck-mode)
+  (c++-mode-hook . (lambda () (setq flycheck-clang-language-standard "c++17"))))
+
+(use-package flycheck-clang-tidy
+  :disabled
+  :ensure t
+  :after flycheck
+  :hook
+  (flycheck-mode . flycheck-clang-tidy-setup))
+
+;; 禁用 Flymake 自动加载
+(remove-hook 'prog-mode-hook 'flymake-mode)  ; 从编程模式钩子中移除
+(remove-hook 'text-mode-hook 'flymake-mode)  ; 从文本模式钩子中移除
+
+;; 如果已加载 Flymake，关闭它
+(when (bound-and-true-p flymake-mode)
+  (flymake-mode -1))
+
+;; 禁用 Flycheck 自动加载
+;(global-unset-key (kbd "C-c !"))  ; 移除 Flycheck 快捷键绑定
+(setq flycheck-global-modes nil)  ; 阻止全局模式启用
+(remove-hook 'prog-mode-hook 'flycheck-mode)  ; 从编程模式钩子中移除
+
+;; 如果已加载 Flycheck，关闭它
+(when (bound-and-true-p flycheck-mode)
+  (flycheck-mode -1))
+
 (use-package lsp-mode
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
         lsp-file-watch-threshold 500)
+  ;(setq lsp-enable-symbol-highlighting t)
+  (setq lsp-diagnostics-provider :none)  ; 禁用 LSP 诊断
+  (setq lsp-enable-diagnostics nil)      ; 确保诊断被禁用
+  (setq lsp-prefer-flymake nil)          ; 使用 flycheck 而非 flymake
+  ;; LSP headerline 配置
+  (setq lsp-headerline-breadcrumb-enable t)
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  ;(setq lsp-headerline-breadcrumb-icons-enable nil)  ; 禁用图标，避免乱码
+  :config
+  ;; 支持 TRAMP 远程开发
+  (setq lsp-enable-file-watchers nil)  ; 禁用文件监控（远程可能有问题）
+  (setq lsp-keep-workspace-alive nil)   ; 关闭项目时自动关闭 LSP 服务器
+  ;(setq lsp-auto-guess-root nil)        ; 不自动猜测项目根目录
+  ;; 移除 LSP 对 Flymake/Flycheck 的依赖
+  (remove-hook 'lsp-mode-hook #'flymake-mode)
+  (remove-hook 'lsp-mode-hook #'flycheck-mode)
+  (remove-hook 'lsp-after-open-hook #'flymake-start)
+
+  ;; 注册常用远程 LSP 客户端
+  (lsp-register-client
+    (make-lsp-client :new-connection (lsp-tramp-connection "pylsp")
+                     :major-modes '(python-mode)
+                     :remote? t
+                     :server-id 'pylsp-remote))
+
+  (lsp-register-client
+   (make-lsp-client
+    ;:new-connection (lsp-tramp-connection "clangd")
+    :new-connection (lsp-tramp-connection
+                    (lambda ()
+                      (cons "clangd" '("--background-index"
+                                       "--compile-commands-dir=build"
+                                       "--header-insertion-decorators=0"
+                                       "--all-scopes-completion"
+                                       "--pch-storage=memory")))) ; "--log=error"; 减少日志输出
+    :major-modes '(c-mode c++-mode)
+    :remote? t
+    :server-id 'clangd-remote))
+  ;; 快速打开远程项目
+  (defun my-open-remote-project ()
+    (interactive)
+    (let ((remote-path (read-file-name "Remote path: " "/ssh:")))
+      (find-file remote-path)
+      (when (projectile-project-p)
+        (projectile-add-known-project remote-path))))
+  
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
          ;(c++-mode . lsp)
          ;(c-mode . lsp)
@@ -119,18 +216,40 @@
   :config
   (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
   (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)  ; 减少干扰
+  (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-doc-position 'at-point)     ; 文档显示位置 'bottom at-point
   :commands lsp-ui-mode)
 
 (use-package lsp-ivy
   :ensure t
   :after (lsp-mode))
 
+(use-package dap-mode
+  :ensure t
+  :after lsp-mode
+  :config
+  (dap-auto-configure-mode)
+  (require 'dap-gdb-lldb)
+  ;; 配置 GDB 路径（远程）
+  (setq dap-gdb-lldb-debug-program '("gdb" "--interpreter=mi"))
+  (dap-register-debug-provider "gdb"
+    (lambda (conf)
+      (-> conf
+          (plist-put :type "gdb")
+          (plist-put :request "launch")
+          (plist-put :name "Debug Remote")))))
+
 (use-package projectile
   :ensure t
   :bind (("C-c p" . projectile-command-map))
   :config
+  ;(setq projectile-indexing-method 'hybrid)  ; 索引方法
+  (setq projectile-enable-caching t)       ; 启用缓存
   (setq projectile-mode-line "Projectile")
-  (setq projectile-track-known-projects-automatically nil)
+  (setq projectile-track-known-projects-automatically t)
+  (setq projectile-completion-system 'ivy)
   (defadvice projectile-project-root (around ignore-remote first activate)
 	(unless (file-remote-p default-directory) ad-do-it)))
 
@@ -143,14 +262,27 @@
   :ensure t
   :defer t
   :config
-  (treemacs-tag-follow-mode)
+  ;; 宽度和位置配置
+  ;(setq treemacs-width 30)               ; 默认宽度
+  ;(setq treemacs-position 'right)        ; 放在右侧
+  ;; 自动调整宽度（可选）
+  (setq treemacs-width-is-initially-locked nil)  ; 允许动态调整
+  (setq treemacs-width (if (< (display-pixel-width) 1600) 25 35))
+  
+  (treemacs-tag-follow-mode t)
+  (treemacs-follow-mode t)  ; 自动跟随当前文件
+  (treemacs-project-follow-mode t)  ; 跟随项目切换
+  (treemacs-filewatch-mode t)  ; 监听文件变化
+  (treemacs-git-mode 'deferred)  ; 显示 Git 状态
+  (setq treemacs-remote-file-behavior 'copy) ; 支持远程文件树
+  (treemacs-resize-icons 16)
   :bind
   (:map global-map
         ("M-0"       . treemacs-select-window)
         ("C-x t 1"   . treemacs-delete-other-windows)
         ("C-x t t"   . treemacs)
         ("C-x t B"   . treemacs-bookmark)
-        ;; ("C-x t C-t" . treemacs-find-file)
+        ;;("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag))
   (:map treemacs-mode-map
 		("/" . treemacs-advanced-helpful-hydra)))
@@ -194,7 +326,6 @@
   (push '(company-semantic :with company-yasnippet) company-backends)
   :hook ((after-init . global-company-mode)))
 
-
 (use-package company-box
   :ensure t
   :if window-system
@@ -202,23 +333,6 @@
 
 ;; hippie
 (global-set-key (kbd "C-<tab>") 'hippie-expand)
-
-(use-package flycheck
-  :disabled
-  :ensure t
-  ;; :init (global-flycheck-mode)
-  :config
-  (setq truncate-lines nil)
-  :hook
-  (prog-mode . flycheck-mode)
-  (c++-mode-hook . (lambda () (setq flycheck-clang-language-standard "c++17"))))
-
-(use-package flycheck-clang-tidy
-  :disabled
-  :ensure t
-  :after flycheck
-  :hook
-  (flycheck-mode . flycheck-clang-tidy-setup))
 
 ;; fzf fuzzy finder
 ;; Only want to search through git files by default
@@ -302,11 +416,23 @@
   :ensure t
   :bind (("C-x o" . 'ace-window)))
 
+;; sth. like vim easymotion
 (global-set-key (kbd "C-j") nil)
 (use-package avy
   :ensure t
+  :config
+  (setq avy-all-windows nil)          ; 只在当前窗口标记
+  (setq avy-background t)             ; 背景字符半透明
+  (setq avy-style 'at-full)           ; 标记样式：完整单词高亮
+  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))  ; 使用 home 行字符作为标记, 最方便按的键
+  ;; (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l ?q ?w ?e ?r ?t ?y ?u ?i ?o ?p))
   :bind
-  (("C-j C-SPC" . avy-goto-char-timer)
+  (("C-'" . avy-goto-char)      ; 跳转到字符
+   ("C-\"" . avy-goto-char-2)    ; 跳转到双字符组合
+   ("M-g f" . avy-goto-line)     ; 跳转到行
+   ("M-g w" . avy-goto-word-1)   ; 跳转到单词
+   ("M-g e" . avy-goto-word-0) ; 跳转到单词（词尾）
+   ("C-j C-SPC" . avy-goto-char-timer)
    ("C-j C-k" . avy-move-line)
    ("C-j C-l" . avy-copy-line)
    ("C-j C-i" . avy-copy-region)))
@@ -338,35 +464,37 @@
   :ensure t
   :after hydra
   :bind
-  (("C-x C-h m" . hydra-multiple-cursors/body)
-   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click))
+  (("C-S-c C-S-c" . mc/edit-lines)       ; 编辑选中的行
+   ("C-c l" . mc/edit-lines)
+   ("C->" . mc/mark-next-like-this)      ; 标记下一个匹配项
+   ("C-<" . mc/mark-previous-like-this)  ; 标记上一个匹配项
+   ("C-c C-<" . mc/mark-all-like-this)   ; 标记所有匹配项
+   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click) ; 鼠标点击添加光标
+   ("C-c m" . hydra-multiple-cursors/body))
   :hydra
   (hydra-multiple-cursors
    (:hint nil)
    "
-Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
-------------------------------------------------------------------
- [_p_]   Prev     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
- [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
- [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search      [_q_] Quit
- [_|_] Align with input CHAR       [Click] Cursor at point"
+ 多行编辑: [_l_] Edit lines [_n_] 下一个  [_p_] 上一个  [_a_] 所有  [_s_] 搜索  [_q_] 退出
+ 列编辑:   [_v_] 垂直对齐  [_i_] 插入数字  [_A_] 插入字母
+ 操作:     [_d_] 删除行  [_b_] 复制行  [_j_] 合并行"
    ("l" mc/edit-lines :exit t)
-   ("a" mc/mark-all-like-this :exit t)
    ("n" mc/mark-next-like-this)
-   ("N" mc/skip-to-next-like-this)
-   ("M-n" mc/unmark-next-like-this)
    ("p" mc/mark-previous-like-this)
-   ("P" mc/skip-to-previous-like-this)
-   ("M-p" mc/unmark-previous-like-this)
-   ("|" mc/vertical-align)
-   ("s" mc/mark-all-in-region-regexp :exit t)
-   ("0" mc/insert-numbers :exit t)
-   ("A" mc/insert-letters :exit t)
-   ("<mouse-1>" mc/add-cursor-on-click)
-   ;; Help with click recognition in this hydra
-   ("<down-mouse-1>" ignore)
-   ("<drag-mouse-1>" ignore)
-   ("q" nil)))
+   ("a" mc/mark-all-like-this)
+   ("s" mc/mark-all-in-region-regexp)
+   ("v" mc/vertical-align)
+   ("i" mc/insert-numbers)
+   ("A" mc/insert-letters)
+   ("d" mc/delete-lines)
+   ("b" mc/duplicate-current-line-or-region)
+   ("j" mc/join-lines)
+   ("q" nil :color blue)))
+
+;; 智能扩大选区
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . er/expand-region))
 
 (use-package tiny ; m1\n10|int func%02d ()
   :ensure t)
@@ -380,15 +508,23 @@ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cu
   :ensure t
   :diminish dashboard-mode
   :config
+  (dashboard-setup-startup-hook)
   (setq dashboard-banner-logo-title "Coding is happening")
   (setq dashboard-projects-backend 'projectile)
   (setq dashboard-startup-banner 'official)
-  (setq dashboard-items '((recents  . 20)
+  (setq dashboard-items '((projects . 10)
+                          (recents  . 20)
 						  (bookmarks . 10)
-						  (projects . 10)))
+                          (agenda . 5)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
-  (dashboard-setup-startup-hook))
+
+  ;; 调整样式
+  (setq dashboard-center-content t)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t))
+;(dashboard-setup-startup-hook) not work
+(add-hook 'after-init-hook 'dashboard-open)  ; 启动后强制打开
 
 (use-package markdown-mode
   :ensure t
