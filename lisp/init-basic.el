@@ -46,6 +46,13 @@
       toggle-debug-on-error t
       display-line-numbers t
       global-display-line-numbers-mode t
+      global-visual-line-mode 1
+
+      ;; long line opt
+      global-visual-line-mode 1
+      redisplay-dont-pause t
+      jit-lock-defer-time 0.1
+      font-lock-support-mode 'jit-lock-mode
       )
 
 (setq-default cursor-type 'bar)

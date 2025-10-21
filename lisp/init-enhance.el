@@ -526,18 +526,6 @@
 ;(dashboard-setup-startup-hook) not work
 (add-hook 'after-init-hook 'dashboard-open)  ; 启动后强制打开
 
-(use-package markdown-mode
-  :ensure t
-  :commands (markdown-mode gfm-mode)
-  :init (setq markdown-command "d:/tools/pandoc-3.2/pandoc.exe")
-  :mode (("README\\.md\\'" . gfm-mode)
-		 ("\\.md\\'" . markdown-mode)
-		 ("\\.markdown\\'" . markdown-mode)))
-
-(use-package htmlize
-  :ensure t
-  :defer t)
-
 ;; C/C++
 (use-package cc-mode
   :functions 			; suppress warnings
