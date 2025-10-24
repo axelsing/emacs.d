@@ -537,7 +537,7 @@
   :bind
   ("C-c o" . ff-find-other-file)
   ;; ("C-c o" . ff-find-other-file-other-window)
-)
+  )
 
 ;; https://google.github.io/styleguide/cppguide.html#Formatting
 ;(add-hook 'c-mode-common-hook 'google-set-c-style)
@@ -547,6 +547,41 @@
           (lambda()
             (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
 
+;; 确保 C++ 模式下换行缩进使用 cc-mode 自带函数
+;; (add-hook 'c++-mode-hook
+;;           (lambda ()
+;;             ;; 绑定 Enter 键到 newline-and-indent（默认已绑定，但需确认）
+;;             (local-set-key (kbd "RET") 'newline-and-indent)
+;;             ;; 确保缩进函数为 cc-mode 自带
+;;             (setq-local indent-line-function 'c-indent-line)))
+
+;; 解决 {|} 回车后indent错误
+(defun my-clang-format-sync-cc-mode ()
+  "同步 clang-format 配置到 cc-mode 变量"
+  (interactive)
+  ;; 查找项目根目录的 .clang-format 文件
+  (let* ((clang-format-file (locate-dominating-file default-directory ".clang-format"))
+         (indent-width 2)  ; 默认值，若找不到 .clang-format 则使用
+         (brace-offset 0)) ; 大括号偏移量（默认 0）
+    ;; 解析 .clang-format 中的 IndentWidth
+    (when clang-format-file
+      (with-temp-buffer
+        (insert-file-contents clang-format-file)
+        ;; 提取 IndentWidth（正则匹配 "IndentWidth: 4" 类似行）
+        (goto-char (point-min))
+        (when (re-search-forward "IndentWidth:\\s-+\\([0-9]+\\)" nil t)
+          (setq indent-width (string-to-number (match-string 1))))
+        ;; 提取 BraceWrapping 相关偏移（可选，根据需要添加）
+        )))
+  ;; 同步到 cc-mode 变量
+  (setq-local c-basic-offset indent-width)
+  (setq-local c-indent-level indent-width)
+  (setq-local c-continued-statement-offset indent-width)
+  (setq-local c-brace-offset brace-offset))
+
+;; 在 C/C++ 模式启动时自动同步 clang-format indent-width
+(add-hook 'c-mode-hook 'my-clang-format-sync-cc-mode)
+(add-hook 'c++-mode-hook 'my-clang-format-sync-cc-mode)
 
 (use-package clang-format
   :ensure t
