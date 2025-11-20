@@ -231,6 +231,8 @@
   :after lsp-mode
   :config
   (dap-auto-configure-mode)
+  ;; 启用 LSP 客户端与服务器的 IO 通信日志（核心日志开关）
+  (setq lsp-log-io t)  ; 日志会输出到 *lsp-log* 缓冲区
   (require 'dap-gdb-lldb)
   ;; 配置 GDB 路径（远程）
   (setq dap-gdb-lldb-debug-program '("gdb" "--interpreter=mi"))

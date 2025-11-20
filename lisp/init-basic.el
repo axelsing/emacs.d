@@ -269,5 +269,17 @@
   (keymap-set hs-minor-mode-map "C-S-<tab>" 'hs-global-cycle))
 (add-hook 'hs-minor-mode-hook 'hs-cycle-key-bindings)
 
+(defun message-with-timestamp (orig-fun &rest args)
+  "正确处理带参数的 message 调用，添加时间戳"
+  (if (null args)  ; 无参数时直接调用
+      (apply orig-fun args)
+    (let* ((timestamp (format-time-string "[%Y-%m-%d %H:%M:%S] "))
+           (fmt (car args))  ; 原始格式字符串
+           (new-fmt (concat timestamp fmt))  ; 时间戳 + 原始格式字符串
+           (new-args (cons new-fmt (cdr args))))  ; 保留所有原始参数
+      (apply orig-fun new-args))))  ; 传递修改后的格式字符串和原始参数
+
+;; 启用包装
+(advice-add 'message :around #'message-with-timestamp)
 
 (provide 'init-basic)
