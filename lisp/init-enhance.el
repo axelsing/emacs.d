@@ -324,6 +324,7 @@
         company-show-numbers t
         company-tooltip-limit 20
         company-idle-delay 0.2
+        company-async-timeout 3
         company-echo-delay 0
         company-tooltip-offset-display 'scrollbar
         company-begin-commands '(self-insert-command))

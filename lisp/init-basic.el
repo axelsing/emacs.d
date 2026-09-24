@@ -44,6 +44,7 @@
       use-short-answers t
       
       toggle-debug-on-error t
+      debug-on-quit t
       display-line-numbers t
       global-display-line-numbers-mode t
       global-visual-line-mode 1
@@ -53,6 +54,10 @@
       redisplay-dont-pause t
       jit-lock-defer-time 0.1
       font-lock-support-mode 'jit-lock-mode
+
+      gc-cons-threshold (* 100 1024 1024)
+      gc-cons-percentage 0.6
+      eldoc-idle-delay 0.5
       )
 
 (setq-default cursor-type 'bar)
