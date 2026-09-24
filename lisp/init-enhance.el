@@ -159,6 +159,7 @@
   (setq lsp-diagnostics-provider :none)  ; 禁用 LSP 诊断
   (setq lsp-enable-diagnostics nil)      ; 确保诊断被禁用
   (setq lsp-prefer-flymake nil)          ; 使用 flycheck 而非 flymake
+  (setq lsp-enable-suggest-server-download nil)   ; 别自动下载
   ;; LSP headerline 配置
   (setq lsp-headerline-breadcrumb-enable t)
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
@@ -204,6 +205,7 @@
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
          ;(c++-mode . lsp)
          ;(c-mode . lsp)
+         ;(python-mode . lsp-deferred)
          ;; if you want which-key integration
          (lsp-mode . lsp-enable-which-key-integration))
   :commands (lsp lsp-deferred)
@@ -585,13 +587,97 @@
 (add-hook 'c-mode-hook 'my-clang-format-sync-cc-mode)
 (add-hook 'c++-mode-hook 'my-clang-format-sync-cc-mode)
 
-(use-package clang-format
-  :ensure t
-  :bind
-  ("C-c C-f" . clang-format-buffer)
-)
+;; 格式化：全部走 apheleia，C-c C-f 统一入口
+;; (use-package clang-format
+;;   :ensure t
+;;   :bind
+;;   ("C-c C-f" . clang-format-buffer)
+;; )
 
 (use-package cmake-mode
   :ensure t)
+
+;; ============================================================
+;; python-env
+;; ============================================================
+(defun my-conda-sync-exec-path ()
+  "把当前 conda 环境的 Scripts / bin 放到 exec-path 和 PATH 最前面。"
+  (when-let ((root (getenv "VIRTUAL_ENV")))
+    (let* ((scripts (expand-file-name "Scripts" root))
+           (bin     (expand-file-name "bin" root))   ; msys/git-bash 风格环境
+           (dirs (cl-remove-if-not #'file-directory-p (list scripts bin))))
+      (dolist (d dirs)
+        (push d exec-path)
+        (setenv "PATH" (concat d ";" (getenv "PATH")))))))
+;; 1. pyvenv 管理 miniconda 环境（重点）
+(use-package pyvenv
+  :ensure t
+  ;; :demand t ; or use 'defer nil'
+  :config
+  (setenv "WORKON_HOME" "C:/Users/void/.conda/envs/")
+  ;; 指定 Conda 环境存放目录（你的自定义环境都在这个路径下）
+  (setq pyvenv-workon-home "C:/Users/void/.conda/envs/")
+  ;; 可选：设置默认激活的 Conda 环境为 cj
+  (setq pyvenv-default-virtualenv-name "cj")
+  ;; 可选：绑定快捷键快速切换环境
+  ;:bind ("C-c C-v w" . pyvenv-workon))
+  ;; 激活后立刻同步 exec-path，保证 lsp-deferred 能看到 basedpyright
+  (add-hook 'pyvenv-post-activate-hooks #'my-conda-sync-exec-path)
+  (my-conda-sync-exec-path)   ; 启动时跑一次
+  )
+; 打开py 进入 python-mode 时自动激活 conda 环境 cj
+(add-hook 'python-mode-hook
+          (lambda ()
+            (pyvenv-workon "cj")))
+; 切换 pyvenv 环境后，自动重启 basedpyright 以加载新环境的依赖包
+(add-hook 'pyvenv-post-activate-hooks
+          (lambda ()
+            (when (bound-and-true-p lsp-mode)
+              (lsp-restart-workspace))))
+;; 2. LSP：延迟启动 + basedpyright
+;; pip install basedpyright black
+(use-package lsp-pyright
+  :ensure t
+  :demand t ; 排查了很久，不加这个，会找不到 pyright 很奇怪
+  :after lsp-mode
+  :custom
+  (lsp-pyright-server-command
+   '("C:/Users/void/.conda/envs/cj/Scripts/basedpyright-langserver.exe" "--stdio"))
+  ;; 兜底写法：如果上面报启动失败，换成这一行
+  ;; (lsp-pyright-server-command
+  ;;  '("C:/Users/void/.conda/envs/cj/python.exe" "-m" "basedpyright.langserver" "--stdio"))
+  (lsp-pyright-python-executable-cmd "python")
+  (lsp-pyright-typechecking-mode "basic")
+  (lsp-pyright-disable-language-service nil)
+  (lsp-enable-on-type-formatting nil)
+  ;; :hook (python-mode . (lambda ()
+  ;;                         (require 'lsp-pyright)
+                          ;; (lsp-deferred)))
+  )
+;; 3. Python Shell 指向 cj 环境
+(setq python-shell-interpreter "python"        ; 名字即可，由 virtualenv-root 去拼
+      python-shell-interpreter-args "-i"
+      python-shell-prompt-detect-failure-warning nil
+      python-shell-completion-native-enable nil) ; Windows 下补全更稳
+;; 4. 格式化（black/ruff 管 Python，clang-format 管 C/C++）
+(use-package apheleia
+  :ensure t
+  :custom
+  (apheleia-fallback-formatter 'clang-format)
+  (apheleia-formatters
+   '((black        . ("black" "-"))
+     (clang-format . ("clang-format" "--assume-filename" filepath))))
+  (apheleia-mode-alist
+   '((python-mode . black)
+     (c-mode      . clang-format)
+     (c++-mode    . clang-format)))
+  :config
+  ;:hook (prog-mode . apheleia-global-mode) ; 保存自动格式化
+  )
+;; 把 python 系 major mode map 里的 C-c C-f 清掉 + 统一接管
+(with-eval-after-load 'python
+  (dolist (map '(python-mode-map python-ts-mode-map))
+    (define-key (symbol-value map) (kbd "C-c C-f") #'apheleia-format-buffer)))
+(global-set-key (kbd "C-c C-f") #'apheleia-format-buffer)
 
 (provide 'init-enhance)
